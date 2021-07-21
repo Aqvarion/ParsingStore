@@ -2,6 +2,7 @@ package com.blackapple.parsingmodule.service;
 
 import com.blackapple.parsingmodule.kafka.ItemProducer;
 import com.blackapple.parsingmodule.model.Item;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
+@Slf4j
 public class ParsingService {
 
 
@@ -26,9 +28,11 @@ public class ParsingService {
 
         Document mainPage = null;
 
+        log.info("Connect to main page");
         try {
             mainPage = Jsoup.connect("https://www.pepper.ru").get();
         } catch (IOException e) {
+            log.error("Error {}",e.getMessage());
             e.printStackTrace();
         }
 
@@ -43,9 +47,11 @@ public class ParsingService {
     public void parsePageItem(String address) {
         Document page = null;
 
+        log.info("Connect to {}",address);
         try {
             page = Jsoup.connect(address).get();
         } catch (IOException e) {
+            log.error("Error {}",e.getMessage());
             e.printStackTrace();
         }
 
@@ -66,8 +72,10 @@ public class ParsingService {
 
         Item item = new Item(title, price, merchant, describer);
 
-        System.out.println(item);
-        itemProducer.sendItem("ssr", item);
+//        System.out.println(item);
+
+        log.info("Sending an item: {}",item.getTitle());
+        itemProducer.sendItem(item);
 
     }
 }

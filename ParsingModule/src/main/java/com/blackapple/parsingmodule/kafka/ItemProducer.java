@@ -12,8 +12,8 @@ public class ItemProducer {
     @Autowired
     private KafkaTemplate<String, Item> itemKafkaTemplate;
 
-    public void sendItem(String itemId, Item item){
-        ListenableFuture<SendResult<String, Item>> future = itemKafkaTemplate.send("items", itemId, item);
+    public void sendItem(Item item){
+        ListenableFuture<SendResult<String, Item>> future = itemKafkaTemplate.send("items", item);
         future.addCallback(System.out::println,System.err::println);
         itemKafkaTemplate.flush();
     }

@@ -15,7 +15,9 @@ public class ItemListener {
     @KafkaListener(topics = "items")
     public void listenItem(Item item){
         System.out.println(item);
-        itemRepository.save(item);
+
+        if (!itemRepository.findByTitle(item.getTitle()).isPresent())
+            itemRepository.save(item);
 
     }
 }
