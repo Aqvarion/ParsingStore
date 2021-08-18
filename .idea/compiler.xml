@@ -11,9 +11,9 @@
         <module name="DownloadModule" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="DownloadModule" target="16" />
-      <module name="ParsingModule" target="16" />
+    <bytecodeTargetLevel target="8">
+      <module name="DownloadModule" target="1.8" />
+      <module name="ParsingModule" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

@@ -1,0 +1,71 @@
+version: "3"
+
+#networks:
+#  myapp:
+#    name: "myapp"
+#    driver: bridge
+#    ipam:
+#      driver: default
+#      config:
+#        - subnet: 10.5.0.0/16
+#          ip_range: 10.5.0.0/24
+#          gateway: 10.5.0.1
+#          aux_addresses:
+#            kafka: 10.5.0.2
+#            zookeper: 10.5.0.3
+services:
+
+  download-app:
+    build: DownloadModule/
+    container_name: "parser-download-app"
+    depends_on:
+      - kafka
+
+  parsing-app:
+    build: ParsingModule/
+    container_name: "parser-parsing-app"
+    depends_on:
+      - download-app
+    logging:
+      driver: loki
+      options:
+        loki-url: http://localhost:3100/loki/api/v1/push
+        loki-external-labels: job=dockerLogs,environment=development
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: "parser-zookeeper"
+#    networks:
+#      - "myapp"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+    - 22181:2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: "parser-kafka"
+#    networks:
+#      - "myapp"
+    ports:
+    - 29092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: LISTENER_IN://kafka:29092, LISTENER_OUT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_IN://kafka:29092, LISTENER_OUT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_IN:PLAINTEXT,LISTENER_OUT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_IN
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  loki:
+    image: grafana/loki:v1.3.0
+    ports:
+      - "3100:3100"
+
+  grafana:
+    image: grafana/grafana:7.1.1
+    ports:
+      - "3000:3000"
